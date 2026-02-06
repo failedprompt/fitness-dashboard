@@ -99,13 +99,13 @@ export default function FitnessDashboard() {
   const totalDailyGoals = 2;
 
   const days = [
-    { day: 'pt.', date: '24.01', active: false },
-    { day: 'sob.', date: '25.01', active: false },
-    { day: 'niedz.', date: '26.01', active: false },
-    { day: 'pon.', date: '27.01', active: true },
-    { day: 'wt.', date: '28.01', active: false },
-    { day: 'śr.', date: '29.01', active: false },
-    { day: 'czw.', date: '30.01', active: false },
+    { day: 'P', date: '3', active: false, calorieProgress: 0.7 },
+    { day: 'W', date: '4', active: false, calorieProgress: 0.85 },
+    { day: 'Ś', date: '5', active: false, calorieProgress: 1.0 },
+    { day: 'C', date: '6', active: true, calorieProgress: mealLogged ? 0.26 : 0 },
+    { day: 'P', date: '7', active: false, calorieProgress: 0 },
+    { day: 'S', date: '8', active: false, calorieProgress: 0 },
+    { day: 'N', date: '9', active: false, calorieProgress: 0 },
   ];
 
   const stories = [
@@ -261,32 +261,40 @@ export default function FitnessDashboard() {
       </header>
 
       {/* Timeline - fixed pod headerem */}
-      <div className="px-4 py-2 border-b border-gray-800 shrink-0">
+      <div className="mx-4 py-2 shrink-0">
         <div className="flex items-center justify-between">
-          <button className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-white">
-            <ChevronRight size={20} className="rotate-180" />
-          </button>
-          <div className="flex justify-between flex-1">
-            {days.slice(1, 6).map((d, i) => (
-              <div
-                key={i}
-                className={`flex flex-col items-center py-1.5 px-2 rounded-xl flex-1 ${
-                  d.active ? 'bg-green-500/20 border border-green-500' : ''
-                }`}
-              >
-                <span className="text-[10px] text-gray-400">{d.day}</span>
-                <span className={`text-xs font-medium ${d.active ? 'text-green-500' : 'text-white'}`}>
-                  {d.date}
-                </span>
-                {(mealLogged || workoutDone) && d.active && (
-                  <div className="w-1 h-1 bg-green-500 rounded-full mt-0.5" />
-                )}
+          {days.map((d, i) => (
+            <div key={i} className="flex flex-col items-center flex-1">
+              <span className="text-[10px] text-gray-500 mb-1">{d.date}</span>
+              {/* Ring with letter */}
+              <div className="relative w-9 h-9">
+                <svg className="w-9 h-9 -rotate-90">
+                  <circle cx="18" cy="18" r="15" fill="none" stroke="#374151" strokeWidth="2.5" />
+                  {d.calorieProgress > 0 && (
+                    <circle 
+                      cx="18" cy="18" r="15" fill="none" 
+                      stroke={d.calorieProgress >= 1 ? '#22c55e' : '#f97316'} 
+                      strokeWidth="2.5" 
+                      strokeDasharray={`${2 * Math.PI * 15}`}
+                      strokeDashoffset={`${2 * Math.PI * 15 * (1 - Math.min(d.calorieProgress, 1))}`}
+                      strokeLinecap="round"
+                    />
+                  )}
+                </svg>
+                <div className={`absolute inset-0 flex items-center justify-center ${
+                  d.active ? 'bg-green-500 rounded-full m-1' : ''
+                }`}>
+                  <span className={`text-xs font-bold ${d.active ? 'text-black' : 'text-gray-300'}`}>
+                    {d.day}
+                  </span>
+                </div>
               </div>
-            ))}
-          </div>
-          <button className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-white">
-            <ChevronRight size={20} />
-          </button>
+              {/* Activity dot */}
+              <div className={`w-1.5 h-1.5 rounded-full mt-1 ${
+                d.calorieProgress > 0 ? 'bg-green-500' : 'bg-transparent'
+              }`} />
+            </div>
+          ))}
         </div>
       </div>
 
@@ -339,16 +347,23 @@ export default function FitnessDashboard() {
                   {/* Ring chart with inner macro segments */}
                   <div className="relative w-28 h-28 shrink-0 ml-2">
                     {/* Outer calorie ring */}
-                    <svg className="w-28 h-28 -rotate-90">
-                      <circle cx="56" cy="56" r="48" fill="none" stroke="#1f2937" strokeWidth="8" />
-                      <circle 
-                        cx="56" cy="56" r="48" fill="none" 
-                        stroke="#22c55e" strokeWidth="8" 
-                        strokeDasharray={`${2 * Math.PI * 48}`}
-                        strokeDashoffset={`${2 * Math.PI * 48 * (1 - (mealLogged ? 0.26 : 0))}`}
-                        strokeLinecap="round"
-                      />
-                    </svg>
+                    {(() => {
+                      const progress = mealLogged ? 0.26 : 0;
+                      const strokeColor = progress >= 1 ? '#22c55e' : progress > 0 ? '#4ade80' : '#374151';
+                      return (
+                        <svg className="w-28 h-28 -rotate-90">
+                          <circle cx="56" cy="56" r="48" fill="none" stroke="#1f2937" strokeWidth="8" />
+                          <circle 
+                            cx="56" cy="56" r="48" fill="none" 
+                            stroke={strokeColor}
+                            strokeWidth="8" 
+                            strokeDasharray={`${2 * Math.PI * 48}`}
+                            strokeDashoffset={`${2 * Math.PI * 48 * (1 - progress)}`}
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                      );
+                    })()}
                     
                     {/* Inner macro ring - 3 separate segments with gaps */}
                     <svg className="w-28 h-28 absolute inset-0" style={{ transform: 'rotate(-90deg)' }}>
